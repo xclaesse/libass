@@ -61,11 +61,9 @@ endforeach
 
 # Dependencies
 
-m_dep = cc.find_library('m', required: false)
-if m_dep.found()
-    deps += m_dep
-endif
+deps += cc.find_library('m', required: false)
 
+# Replace with Meson iconv lookup (`dependency('iconv')`) once 0.60 releases, see: https://github.com/libass/libass/pull/330#discussion_r707666730
 iconv_dep = cc.find_library('iconv', required: false)
 if iconv_dep.found()
     deps += iconv_dep
@@ -110,11 +108,10 @@ if host_machine.system() != 'windows' and host_machine.system() != 'darwin'
 endif
 
 fontconfig_dep = dependency('fontconfig', version: '>= 2.10.92', required: req_fontconfig)
-fontconfig = false
-if fontconfig_dep.found()
+fontconfig = fontconfig_dep.found()
+if fontconfig
     deps += fontconfig_dep
     conf.set('CONFIG_FONTCONFIG', 1)
-    fontconfig = true
 endif
 
 if get_option('test')
