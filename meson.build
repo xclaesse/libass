@@ -103,13 +103,7 @@ if harfbuzz_dep.found()
     conf.set('CONFIG_HARFBUZZ', 1)
 endif
 
-req_fontconfig = get_option('fontconfig')
-
-if host_machine.system() != 'windows' and host_machine.system() != 'darwin'
-    req_fontconfig = get_option('fontconfig').disabled()
-endif
-
-fontconfig_dep = dependency('fontconfig', version: '>= 2.10.92', required: req_fontconfig)
+fontconfig_dep = dependency('fontconfig', version: '>= 2.10.92', required: get_option('fontconfig'))
 fontconfig = fontconfig_dep.found()
 if fontconfig
     deps += fontconfig_dep
