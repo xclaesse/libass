@@ -1,10 +1,10 @@
 src_intel = files(
-    'x86/rasterizer.asm',
+    'x86/be_blur.asm',
     'x86/blend_bitmaps.asm',
     'x86/blur.asm',
-    'x86/cpuid.asm'
+    'x86/cpuid.asm',
+    'x86/rasterizer.asm',
 )
-src_intel64 = files('x86/be_blur.asm')
 src_fontconfig = files('ass_fontconfig.c')
 src_directwrite = files('ass_directwrite.c')
 src_coretext = files('ass_coretext.c')
@@ -46,9 +46,6 @@ if coretext
 endif
 
 if enable_asm
-    if bittype == '64'
-        src_intel += src_intel64
-    endif
     libass_src += nasm_gen.process(src_intel)
 endif
 
