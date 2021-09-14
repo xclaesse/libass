@@ -2,7 +2,7 @@ project('libass', 'c', license: 'ISC',
         meson_version: '>= 0.55.0',
         # cpp_std specified because meson compiler options are currently global
         default_options: ['c_std=c99', 'cpp_std=c++11', 'buildtype=debugoptimized', 'warning_level=2'],
-        version: '0.15.0')
+        version: '0.15.2')
 
 conf = configuration_data()
 deps = []
