@@ -50,6 +50,7 @@ if enable_asm
 endif
 
 libass = library('ass', libass_src, config_h,
+                 vs_module_defs: 'libass.def',
                  install: true,
                  include_directories: incs,
                  dependencies: deps)
