@@ -83,7 +83,7 @@ endif
 if host_machine.system() == 'windows' and get_option('default_library') == 'static'
     add_project_arguments('-DFRIBIDI_LIB_STATIC', language: 'c')
 endif
-fribidi_dep = dependency('fribidi', version: '>= 0.19.0',
+fribidi_dep = dependency('fribidi', version: '>= 0.19.1',
                          fallback: ['fribidi', 'libfribidi_dep'],
                          default_options: ['docs=false', 'tests=false'])
 if fribidi_dep.found()
