@@ -1,4 +1,4 @@
-src_intel = files(
+src_x86 = files(
     'x86/be_blur.asm',
     'x86/blend_bitmaps.asm',
     'x86/blur.asm',
@@ -46,7 +46,7 @@ if coretext
 endif
 
 if enable_asm
-    libass_src += nasm_gen.process(src_intel)
+    libass_src += nasm_gen.process(src_x86)
 endif
 
 libass = library('ass', libass_src, config_h,

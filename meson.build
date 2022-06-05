@@ -175,19 +175,19 @@ endif
 if host_machine.cpu_family() == 'x86'
     bittype = '32'
     nasm_args += '-DARCH_X86_64=0'
-    intel = true
+    x86 = true
 elif host_machine.cpu_family() == 'x86_64'
     bittype = '64'
     nasm_args += '-DARCH_X86_64=1'
-    intel = true
+    x86 = true
 else
-    intel = false
+    x86 = false
 endif
 
-if enable_asm and not intel
-    warning('ASM functions are not available on non-intel machines; disabling.')
+if enable_asm and not x86
+    warning('ASM functions are not available on non-x86 machines; disabling.')
     enable_asm = false
-elif (not enable_asm) and intel
+elif (not enable_asm) and x86
     warning('Install nasm-2.10 or later for a significantly faster libass build.')
 endif
 
@@ -213,6 +213,9 @@ endif
 
 if enable_asm
     conf.set('CONFIG_ASM', 1)
+    if x86
+        conf.set('ARCH_X86', 1)
+    endif
 
     nasm_args += '-Dprivate_prefix=ass'
     nasm_args += ['-I', meson.current_source_dir() / 'libass' + '/', '-o', '@OUTPUT@', '@INPUT@']
