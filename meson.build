@@ -63,7 +63,7 @@ endforeach
 
 deps += cc.find_library('m', required: false)
 
-# Replace with Meson iconv lookup (`dependency('iconv')`) once 0.60 releases, see: https://github.com/libass/libass/pull/330#discussion_r707666730
+# Replace with Meson iconv lookup (`dependency('iconv')`) once 0.60 can be required, see: https://github.com/libass/libass/pull/330#discussion_r707666730
 iconv_dep = cc.find_library('iconv', required: false)
 if iconv_dep.found()
     deps += iconv_dep
