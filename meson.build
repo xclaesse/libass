@@ -153,7 +153,7 @@ enable_asm = nasm.found()
 
 # NASM version check
 if enable_asm
-    nasm_r = run_command(nasm, '-v')
+    nasm_r = run_command(nasm, '-v', check: true)
     out = nasm_r.stdout().strip().split()
     if out[1].to_lower() == 'version'
         if out[2].version_compare('< 2.10')
