@@ -11,23 +11,24 @@ src_coretext = files('ass_coretext.c')
 
 libass_src = files(
     'ass.c',
-    'ass_utils.c',
-    'ass_string.c',
-    'ass_strtod.c',
-    'ass_library.c',
+    'ass_bitmap.c',
+    'ass_blur.c',
     'ass_cache.c',
+    'ass_drawing.c',
+    'ass_filesystem.c',
     'ass_font.c',
     'ass_fontselect.c',
-    'ass_render.c',
-    'ass_render_api.c',
-    'ass_parse.c',
-    'ass_shaper.c',
+    'ass_library.c',
     'ass_outline.c',
-    'ass_drawing.c',
+    'ass_parse.c',
     'ass_rasterizer.c',
     'ass_rasterizer_c.c',
-    'ass_bitmap.c',
-    'ass_blur.c'
+    'ass_render.c',
+    'ass_render_api.c',
+    'ass_shaper.c',
+    'ass_string.c',
+    'ass_strtod.c',
+    'ass_utils.c',
 )
 
 libass_headers = files(
