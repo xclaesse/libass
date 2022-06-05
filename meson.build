@@ -95,7 +95,7 @@ harfbuzz_options = ['tests=disabled', 'cairo=disabled', 'gobject=disabled']
 if host_machine.system() == 'windows' or host_machine.system() == 'darwin'
     harfbuzz_options += ['glib=disabled', 'freetype=disabled']
 endif
-harfbuzz_dep = dependency('harfbuzz', version: '>= 1.2.3', required: get_option('harfbuzz'),
+harfbuzz_dep = dependency('harfbuzz', version: '>= 1.2.3',
                           fallback: ['harfbuzz', 'libharfbuzz_dep'],
                           default_options: harfbuzz_options)
 if harfbuzz_dep.found()

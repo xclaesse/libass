@@ -2,7 +2,6 @@ option('test', type: 'boolean', value: false, description: 'enable test program 
 option('profile', type: 'boolean', value: false, description: 'enable profiling program')
 
 option('fontconfig', type: 'feature', description: 'fontconfig support')
-option('harfbuzz', type: 'feature', description: 'HarfBuzz support')
 option('directwrite', type: 'feature', description: 'DirectWrite support (win32 only)')
 option('coretext', type: 'feature', description: 'CoreText support (OSX only)')
 option('asm', type: 'feature', description: 'ASM support (better performance)')
