@@ -50,17 +50,22 @@ if enable_asm
     libass_src += nasm_gen.process(src_x86)
 endif
 
-gen_defs = find_program('../gen_defs.py')
-libass_def = custom_target('libass.def',
-                           input: ['libass.sym'],
-                           output: ['libass.def'],
-                           command: [gen_defs, '@INPUT@', '@OUTPUT@'])
+if host_machine.system() == 'windows'
+    gen_defs = find_program('../gen_defs.py')
+    libass_def = custom_target('libass.def',
+                               input: ['libass.sym'],
+                               output: ['libass.def'],
+                               command: [gen_defs, '@INPUT@', '@OUTPUT@'])
+    kwargs = {'vs_module_defs': libass_def}
+else
+    kwargs = {}
+endif
 
 libass = library('ass', libass_src, config_h,
-                 vs_module_defs: libass_def,
                  install: true,
                  include_directories: incs,
-                 dependencies: deps)
+                 dependencies: deps,
+                 kwargs: kwargs)
 
 libass_dep = declare_dependency(link_with: libass,
                                 include_directories: incs,
