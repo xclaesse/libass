@@ -26,13 +26,7 @@ endif
 
 test_args = []
 
-if host_machine.system() == 'linux'
-    test_args += '-D_GNU_SOURCE'
-    add_project_arguments('-D_GNU_SOURCE', language: 'c')
-elif host_machine.system() == 'darwin'
-    test_args += '-D_DARWIN_C_SOURCE'
-    add_project_arguments('-D_DARWIN_C_SOURCE', language: 'c')
-elif cc.get_id() != 'msvc'
+if cc.get_id() != 'msvc'
     test_args += '-D_POSIX_C_SOURCE=200809L'
     add_project_arguments('-D_POSIX_C_SOURCE=200809L', language: 'c')
 endif
