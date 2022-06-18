@@ -66,7 +66,7 @@ if iconv_dep.found() or cc.has_function('iconv_open')
     conf.set('CONFIG_ICONV', 1)
 endif
 
-freetype_dep = dependency('freetype2',version: '>= 2.10.92',
+freetype_dep = dependency('freetype2',version: '>= 9.17.3',
                           fallback: ['freetype2', 'freetype_dep'],
                           default_options: ['default_library=' + get_option('default_library'), 'harfbuzz=disabled']) # workaround for https://github.com/mesonbuild/meson/issues/8047
 if freetype_dep.found()
@@ -74,9 +74,6 @@ if freetype_dep.found()
     conf.set('CONFIG_FREETYPE', 1)
 endif
 
-if host_machine.system() == 'windows' and get_option('default_library') == 'static'
-    add_project_arguments('-DFRIBIDI_LIB_STATIC', language: 'c')
-endif
 fribidi_dep = dependency('fribidi', version: '>= 0.19.1',
                          fallback: ['fribidi', 'libfribidi_dep'],
                          default_options: ['docs=false', 'tests=false'])
@@ -85,10 +82,7 @@ if fribidi_dep.found()
     conf.set('CONFIG_FRIBIDI', 1)
 endif
 
-harfbuzz_options = ['tests=disabled', 'cairo=disabled', 'gobject=disabled']
-if host_machine.system() == 'windows' or host_machine.system() == 'darwin'
-    harfbuzz_options += ['glib=disabled', 'freetype=disabled']
-endif
+harfbuzz_options = ['tests=disabled', 'cairo=disabled', 'gobject=disabled', 'glib=disabled', 'freetype=disabled']
 harfbuzz_dep = dependency('harfbuzz', version: '>= 1.2.3',
                           fallback: ['harfbuzz', 'libharfbuzz_dep'],
                           default_options: harfbuzz_options)
