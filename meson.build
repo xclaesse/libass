@@ -107,9 +107,21 @@ endif
 directwrite = false
 if host_machine.system() == 'windows' and not get_option('directwrite').disabled()
     if cc.has_header('windows.h')
-        deps += cc.find_library('dwrite', required: true)
-        conf.set('CONFIG_DIRECTWRITE', 1)
         directwrite = true
+        conf.set('CONFIG_DIRECTWRITE', 1)
+        code = '''#include <windows.h>
+            #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+            #error Win32 desktop APIs are available
+            #endif'''
+        if cc.compiles(code)
+            # WinRT/UWP/app build: GDI and LoadLibrary are unavailable,
+            # but DirectWrite is always present
+            deps += cc.find_library('dwrite', required: true)
+        else
+            # Win32/desktop build: GDI is always present;
+            # DirectWrite is optional but can be loaded via LoadLibrary
+            deps += cc.find_library('gdi32', required: true)
+        endif
     elif get_option('directwrite').enabled()
         error('DirectWrite was enabled explicitly, but required header is missing.')
     endif
