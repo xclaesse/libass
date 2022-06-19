@@ -6,6 +6,7 @@ project('libass', 'c', license: 'ISC',
 
 conf = configuration_data()
 deps = []
+test_deps = []
 
 # Compiler setup
 
@@ -99,7 +100,7 @@ if fontconfig
 endif
 
 if get_option('test')
-    deps += dependency('libpng', version: '>= 1.2.0')
+    test_deps += dependency('libpng', version: '>= 1.2.0')
     conf.set('CONFIG_LIBPNG', 1)
 endif
 
