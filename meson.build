@@ -136,8 +136,26 @@ endif
 # ASM
 
 nasm_args = []
-nasm = find_program('nasm', required: get_option('asm'))
-enable_asm = nasm.found()
+
+# Architecture check
+if host_machine.cpu_family() == 'x86'
+    bittype = '32'
+    nasm_args += '-DARCH_X86_64=0'
+    x86 = true
+elif host_machine.cpu_family() == 'x86_64'
+    bittype = '64'
+    nasm_args += '-DARCH_X86_64=1'
+    x86 = true
+else
+    x86 = false
+endif
+
+if x86
+    nasm = find_program('nasm', required: get_option('asm'))
+    enable_asm = nasm.found()
+else
+    enable_asm = false
+endif
 
 # NASM version check
 if enable_asm
@@ -154,23 +172,9 @@ if enable_asm
     endif
 endif
 
-# Architecture check - TODO x32
-if host_machine.cpu_family() == 'x86'
-    bittype = '32'
-    nasm_args += '-DARCH_X86_64=0'
-    x86 = true
-elif host_machine.cpu_family() == 'x86_64'
-    bittype = '64'
-    nasm_args += '-DARCH_X86_64=1'
-    x86 = true
-else
-    x86 = false
-endif
-
-if enable_asm and not x86
-    warning('ASM functions are not available on non-x86 machines; disabling.')
-    enable_asm = false
-elif (not enable_asm) and x86
+if get_option('asm').enabled() and (not enable_asm)
+    error('ASM functions were enabled but are unavailable.')
+elif (not enable_asm) and x86 and (not get_option('asm').disabled())
     warning('Install nasm-2.10 or later for a significantly faster libass build.')
 endif
 
@@ -189,7 +193,7 @@ if enable_asm
     elif host_system == 'dragonfly' or host_system.endswith('bsd')
         nasm_args += ['-f', 'elf' + bittype]
     else
-        warning('Please contact libass upstream to figure out if ASM support for your platform can be added. In the meantime, disabling.')
+        error('Please contact libass upstream to figure out if ASM support for your platform can be added. In the meantime, disabling.')
         enable_asm = false
     endif
 endif
