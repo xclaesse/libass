@@ -206,7 +206,7 @@ if enable_asm
     endif
 
     nasm_args += '-Dprivate_prefix=ass'
-    nasm_args += ['-I', meson.current_source_dir() / 'libass' + '/', '-o', '@OUTPUT@', '@INPUT@']
+    nasm_args += ['-I', meson.current_source_dir() / 'libass' + '/', '-DPIC=1', '-o', '@OUTPUT@', '@INPUT@']
 
     nasm_gen = generator(nasm, output: '@BASENAME@.o', arguments: nasm_args)
 endif
