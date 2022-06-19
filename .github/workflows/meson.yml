@@ -20,14 +20,14 @@ jobs:
             os: windows-latest,
             msvc: true,
             buildtype: release,
-            args: '-Ddefault_library=static --wrap-mode=forcefallback -Dfontconfig=disabled'
+            args: '-Ddefault_library=static --wrap-mode=forcefallback'
           }
           - {
             name: Windows MinGW Release,
             os: windows-latest,
             msvc: false,
             buildtype: release,
-            args: '-Dfontconfig=disabled'
+            args: ''
           }
           - {
             name: Ubuntu Debug,
