@@ -129,8 +129,9 @@ if host_machine.system() == 'darwin' and not get_option('coretext').disabled()
 endif
 
 if get_option('require-system-font-provider') and not fontconfig and not directwrite and not coretext
-    error('''Either DirectWrite (on Windows), CoreText (on OSX), or Fontconfig (Linux, other) is required.
-If you really want to compile without a system font provider, set -Drequire-system-font-provider=false''')
+    error('''Either DirectWrite (on Windows), CoreText (on OSX), or Fontconfig
+(Linux, other) is required. If you really want to compile without
+a system font provider, set -Drequire-system-font-provider=false''')
 endif
 
 # ASM
