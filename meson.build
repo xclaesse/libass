@@ -132,8 +132,13 @@ endif
 coretext = false
 if host_machine.system() == 'darwin' and not get_option('coretext').disabled()
     coretext_dep = dependency('appleframeworks', modules: ['CoreText', 'CoreFoundation'], required: false)
+    appservices_dep = dependency('appleframeworks', modules: ['ApplicationServices', 'CoreFoundation'], required: false)
     if cc.has_type('CTRunRef', prefix: '#include <CoreText/CoreText.h>', dependencies: coretext_dep)
         deps += coretext_dep
+        conf.set('CONFIG_CORETEXT', 1)
+        coretext = true
+    elif cc.has_type('CTRunRef', prefix: '#include <ApplicationServices/ApplicationServices.h>', dependencies: appservices_dep)
+        deps += appservices_dep
         conf.set('CONFIG_CORETEXT', 1)
         coretext = true
     elif get_option('coretext').enabled()
