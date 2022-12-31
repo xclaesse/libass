@@ -86,6 +86,12 @@ jobs:
           sudo apt-get update
           sudo apt-get install ninja-build build-essential pkg-config libfreetype6-dev libfontconfig1-dev libharfbuzz-dev libfribidi-dev
 
+      - name: Fetch wrapfiles
+        if: matrix.config.os == 'windows-latest' || matrix.config.os == 'macos-latest'
+        run: |
+          meson wrap install libpng
+          meson wrap install zlib
+
       - name: Configure
         run: meson build ${{ matrix.config.args }} -Dbuildtype=${{ matrix.config.buildtype }}
 
