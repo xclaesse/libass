@@ -1,5 +1,5 @@
 project('libass', 'c', license: 'ISC',
-        meson_version: '>= 0.55.0',
+        meson_version: '>= 0.64.0',
         # cpp_std specified because meson compiler options are currently global, can be set per-subproject with 0.63
         default_options: ['c_std=c99', 'cpp_std=c++11', 'buildtype=debugoptimized', 'warning_level=2'],
         version: '0.16.0')
@@ -7,6 +7,8 @@ project('libass', 'c', license: 'ISC',
 conf = configuration_data()
 deps = []
 test_deps = []
+
+host_system = host_machine.system()
 
 # Compiler setup
 
@@ -58,18 +60,15 @@ endforeach
 
 deps += cc.find_library('m', required: false)
 
-# Replace with Meson iconv lookup (`dependency('iconv')`) once 0.60 can be required, see: https://github.com/libass/libass/pull/330#discussion_r707666730
-iconv_dep = cc.find_library('iconv', required: false)
+iconv_dep = dependency('iconv', required: false)
 if iconv_dep.found()
-    deps += iconv_dep
-endif
-if iconv_dep.found() or cc.has_function('iconv_open')
     conf.set('CONFIG_ICONV', 1)
+    deps += iconv_dep
 endif
 
 freetype_dep = dependency('freetype2',version: '>= 9.17.3',
                           fallback: ['freetype2', 'freetype_dep'],
-                          default_options: ['default_library=' + get_option('default_library'), 'harfbuzz=disabled']) # workaround for https://github.com/mesonbuild/meson/issues/8047
+                          default_options: ['harfbuzz=disabled'])
 if freetype_dep.found()
     deps += freetype_dep
     conf.set('CONFIG_FREETYPE', 1)
@@ -106,7 +105,7 @@ endif
 
 # DirectWrite
 directwrite = false
-if host_machine.system() == 'windows' and not get_option('directwrite').disabled()
+if host_system == 'windows' and not get_option('directwrite').disabled()
     if cc.has_header('windows.h')
         directwrite = true
         conf.set('CONFIG_DIRECTWRITE', 1)
@@ -130,7 +129,7 @@ endif
 
 # CoreText
 coretext = false
-if host_machine.system() == 'darwin' and not get_option('coretext').disabled()
+if host_system == 'darwin' and not get_option('coretext').disabled()
     coretext_dep = dependency('appleframeworks', modules: ['CoreText', 'CoreFoundation'], required: false)
     appservices_dep = dependency('appleframeworks', modules: ['ApplicationServices', 'CoreFoundation'], required: false)
     if cc.has_type('CTRunRef', prefix: '#include <CoreText/CoreText.h>', dependencies: coretext_dep)
@@ -153,80 +152,55 @@ a system font provider, set -Drequire-system-font-provider=false''')
 endif
 
 # ASM
-
-nasm_args = []
-
-# Architecture check
-if host_machine.cpu_family() == 'x86'
-    bittype = '32'
-    nasm_args += '-DARCH_X86_64=0'
-    x86 = true
-elif host_machine.cpu_family() == 'x86_64'
-    bittype = '64'
-    nasm_args += '-DARCH_X86_64=1'
-    x86 = true
-else
-    x86 = false
-endif
-
+x86 = host_machine.cpu_family().startswith('x86')
 if x86
-    nasm = find_program('nasm', required: get_option('asm'))
-    enable_asm = nasm.found()
+    enable_asm = add_languages('nasm', required: get_option('asm'), native: false)
+    if not enable_asm and not get_option('asm').disabled()
+        warning('Install nasm-2.10 or later for a significantly faster libass build.')
+    endif
+    # NASM version check
+    if enable_asm and meson.get_compiler('nasm').version().version_compare('< 2.10')
+        warning('nasm is too old (found @0@); ASM functions are disabled.'.format(out[2]))
+        enable_asm = false
+    endif
+elif host_machine.cpu_family() == 'aarch64'
+    enable_asm = not get_option('asm').disabled()
+elif get_option('asm').enabled()
+    error('ASM functions were enabled but are unavailable.')
 else
     enable_asm = false
 endif
 
-# NASM version check
-if enable_asm
-    nasm_r = run_command(nasm, '-v', check: true)
-    out = nasm_r.stdout().strip().split()
-    if out[1].to_lower() == 'version'
-        if out[2].version_compare('< 2.10')
-            warning('nasm is too old (found @0@); ASM functions are disabled.'.format(out[2]))
-            enable_asm = false
-        endif
-    else
-        warning('Unexpected nasm version string: @0@; disabling.'.format(nasm_r.stdout()))
-        enable_asm = false
-    endif
-endif
-
-if get_option('asm').enabled() and (not enable_asm)
-    error('ASM functions were enabled but are unavailable.')
-elif (not enable_asm) and x86 and (not get_option('asm').disabled())
-    warning('Install nasm-2.10 or later for a significantly faster libass build.')
-endif
-
 # System check
-if enable_asm
-    host_system = host_machine.system()
-    if host_system == 'windows'
-        nasm_args += ['-f', 'win' + bittype]
-        if bittype == '32'
-            nasm_args += '-DPREFIX'
-        endif
-    elif host_system == 'darwin'
-        nasm_args += ['-f', 'macho' + bittype, '-DPREFIX', '-DSTACK_ALIGNMENT=16']
-    elif host_system == 'linux' or host_system == 'sunos' or host_system == 'haiku'
-        nasm_args += ['-f', 'elf' + bittype, '-DSTACK_ALIGNMENT=16']
-    elif host_system == 'dragonfly' or host_system.endswith('bsd')
-        nasm_args += ['-f', 'elf' + bittype]
-    else
-        error('Please contact libass upstream to figure out if ASM support for your platform can be added. In the meantime, disabling.')
-        enable_asm = false
-    endif
-endif
-
 if enable_asm
     conf.set('CONFIG_ASM', 1)
     if x86
         conf.set('ARCH_X86', 1)
+        nasm_args = ['-Dprivate_prefix=ass', '-DPIC=1']
+
+        cpu_family = host_machine.cpu_family()
+        if cpu_family == 'x86'
+            nasm_args += '-DARCH_X86_64=0'
+        else
+            nasm_args += '-DARCH_X86_64=1'
+        endif
+
+        if host_system in ['windows', 'cygwin']
+            if cpu_family == 'x86'
+                nasm_args += '-DPREFIX'
+            endif
+        elif host_system == 'darwin'
+            nasm_args += ['-DPREFIX', '-DSTACK_ALIGNMENT=16']
+        elif host_system == 'linux' or host_system == 'sunos' or host_system == 'haiku'
+            nasm_args += ['-DSTACK_ALIGNMENT=16']
+        elif host_system == 'dragonfly' or host_system.endswith('bsd')
+            nasm_args += []
+        else
+            error('Please contact libass upstream to figure out if ASM support for your platform can be added.')
+        endif
+        add_project_arguments(nasm_args, language: 'nasm')
+
     endif
-
-    nasm_args += '-Dprivate_prefix=ass'
-    nasm_args += ['-I', meson.current_source_dir() / 'libass' + '/', '-DPIC=1', '-o', '@OUTPUT@', '@INPUT@']
-
-    nasm_gen = generator(nasm, output: '@BASENAME@.o', arguments: nasm_args)
 endif
 
 config_h = configure_file(output: 'config.h', configuration: conf)
